@@ -6,3 +6,16 @@
 .severity-critical {
     color: red !important;
 }
+
+.metaData {
+    text-align: left;
+    font-size: 1.5em;
+}
+
+.statusError {
+    color: red;
+}
+
+.statusSuccess {
+    color: green;
+}

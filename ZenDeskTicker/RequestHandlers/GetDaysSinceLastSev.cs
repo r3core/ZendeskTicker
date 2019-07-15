@@ -38,7 +38,13 @@ namespace ZenDeskTicker.RequestHandlers
                 return new DaysSinceLastSevResponse()
                 {
                     SeverityLevel = request.SeverityLevel,
-                    DaysSinceSev = -1
+                    DaysSinceSev = -1,
+                    TicketTitle = string.Empty,
+                    TicketCreatedAt = null,
+                    InvestigativeSteps = string.Empty,
+                    TicketSummary = string.Empty,
+                    ResolutionSummary = string.Empty,
+                    Status = string.Empty
                 };
             }
 
@@ -46,7 +52,13 @@ namespace ZenDeskTicker.RequestHandlers
             return new DaysSinceLastSevResponse()
             {
                 SeverityLevel = request.SeverityLevel,
-                DaysSinceSev = (int)days
+                DaysSinceSev = (int)days,
+                TicketCreatedAt = recentResult.created_at,
+                TicketTitle = recentResult.raw_subject,
+                Status = recentResult.status,
+                InvestigativeSteps = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskInvestigativeStepsId"])?.value?.ToString(),
+                ResolutionSummary = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskResolutionSummaryId"])?.value?.ToString(),
+                TicketSummary = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskTicketSummaryId"])?.value?.ToString()
             };
         }
     }

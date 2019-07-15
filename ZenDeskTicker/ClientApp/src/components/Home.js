@@ -20,13 +20,38 @@ export class Home extends Component {
 
     static renderDaysSinceCounter(DaysSinceSev) {
         var cardClass = 'card'
-        if (DaysSinceSev.daysSinceSev < 4) {
+        if (DaysSinceSev.daysSinceSev < 1) {
             cardClass += ' severity-critical';
         }
+        var statusClass = 'statusError';
+        if (DaysSinceSev.status && DaysSinceSev.status === 'solved') {
+            statusClass = 'statusSuccess';
+        }
+        let current_datetime = new Date(DaysSinceSev.ticketCreatedAt);
+        let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
         return (
-            <h1 className={cardClass}>
-                {DaysSinceSev.daysSinceSev}
-            </h1>
+            <div>
+                <h1 className={cardClass}>
+                    {DaysSinceSev.daysSinceSev}
+                </h1>
+                <div className='metaData'>
+                    <h2 className={statusClass}>
+                        <strong>Status</strong>: {DaysSinceSev.status}
+                    </h2>
+                    <h2>
+                        {formatted_date}: {DaysSinceSev.ticketTitle}
+                    </h2>
+                    <p>
+                        <strong>Summary</strong>: {DaysSinceSev.ticketSummary}
+                    </p>
+                    <p>
+                        <strong>Investigative Steps</strong>: {DaysSinceSev.investigativeSteps}
+                    </p>
+                    <p>
+                        <strong>Resolution</strong>: {DaysSinceSev.resolutionSummary}
+                    </p>
+                </div>
+            </div>
         );
     }
 
