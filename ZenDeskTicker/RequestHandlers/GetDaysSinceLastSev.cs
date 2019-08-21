@@ -23,7 +23,7 @@ namespace ZenDeskTicker.RequestHandlers
         {
             var client = new RestClient("https://panviva.zendesk.com");
             var restRequest = new RestRequest("api/v2/search", Method.GET, DataFormat.Json);
-            restRequest.AddQueryParameter("query", $"fieldvalue:severity_{request.SeverityLevel}", true);
+            restRequest.AddQueryParameter("query", $"tags:severity_{request.SeverityLevel}", true);
             restRequest.AddQueryParameter("sort_by", "created_at", true);
             restRequest.AddQueryParameter("sort_order", "desc", true);
             
@@ -32,8 +32,46 @@ namespace ZenDeskTicker.RequestHandlers
             restRequest.AddHeader("Authorization", $"Basic {encodedAuth}");
 
             var result = await client.GetAsync<ZendeskSearch>(restRequest);
-            var recentResult = result.results?.FirstOrDefault();
-            if (recentResult == null)
+
+            var topResults = result.results?.Take(int.Parse(_config["auditScanLimit"]));
+            if (topResults == null)
+            {
+                return new DaysSinceLastSevResponse()
+                {
+                    SeverityLevel = request.SeverityLevel,
+                    DaysSinceSev = -1,
+                    TicketTitle = string.Empty,
+                    TicketCreatedAt = null,
+                    InvestigativeSteps = string.Empty,
+                    TicketSummary = string.Empty,
+                    ResolutionSummary = string.Empty,
+                    Status = string.Empty
+                };
+            }
+            var auditDays = new GetDaysSinceUsingAudit(_config);
+            var mostRecent = default(ZendeskSearchResult);
+            var mostRecentAudit = default(DaysSinceUsingAuditResponse);
+            foreach (var nextResult in topResults)
+            {
+                var auditResult = await auditDays.HandleAsync(new DaysSinceUsingAuditRequest
+                {
+                    SeverityLevel = request.SeverityLevel,
+                    TicketId = nextResult.id
+                });
+
+                if (mostRecent == null)
+                {
+                    mostRecent = nextResult;
+                    mostRecentAudit = auditResult;
+                }
+                else if (auditResult.DaysSinceSev < mostRecentAudit.DaysSinceSev)
+                {
+                    mostRecent = nextResult;
+                    mostRecentAudit = auditResult;
+                }
+            }
+
+            if (mostRecent == null)
             {
                 return new DaysSinceLastSevResponse()
                 {
@@ -48,17 +86,16 @@ namespace ZenDeskTicker.RequestHandlers
                 };
             }
 
-            var days = (DateTime.UtcNow.Date - recentResult.created_at.Date).TotalDays;
             return new DaysSinceLastSevResponse()
             {
                 SeverityLevel = request.SeverityLevel,
-                DaysSinceSev = (int)days,
-                TicketCreatedAt = recentResult.created_at,
-                TicketTitle = recentResult.raw_subject,
-                Status = recentResult.status,
-                InvestigativeSteps = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskInvestigativeStepsId"])?.value?.ToString(),
-                ResolutionSummary = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskResolutionSummaryId"])?.value?.ToString(),
-                TicketSummary = recentResult.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskTicketSummaryId"])?.value?.ToString()
+                DaysSinceSev = (int)mostRecentAudit.DaysSinceSev,
+                TicketCreatedAt = mostRecent.created_at,
+                TicketTitle = mostRecent.raw_subject,
+                Status = mostRecent.status,
+                InvestigativeSteps = mostRecent.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskInvestigativeStepsId"])?.value?.ToString(),
+                ResolutionSummary = mostRecent.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskResolutionSummaryId"])?.value?.ToString(),
+                TicketSummary = mostRecent.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskTicketSummaryId"])?.value?.ToString()
             };
         }
     }
