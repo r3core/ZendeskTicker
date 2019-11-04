@@ -18,6 +18,8 @@ export class Home extends Component {
             });
     }
 
+    
+
     static renderDaysSinceCounter(DaysSinceSev) {
         var cardClass = 'card'
         if (DaysSinceSev.daysSinceSev < 1) {
@@ -28,7 +30,7 @@ export class Home extends Component {
             statusClass = 'statusSuccess';
         }
         let current_datetime = new Date(DaysSinceSev.ticketCreatedAt);
-        let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+        let formatted_date = current_datetime.getUTCFullYear() + "-" + (current_datetime.getUTCMonth() + 1) + "-" + current_datetime.getUTCDate() + " " + current_datetime.getUTCHours() + ":" + current_datetime.getUTCMinutes() + ":" + current_datetime.getUTCSeconds();
         return (
             <div>
                 <h1 className={cardClass}>
