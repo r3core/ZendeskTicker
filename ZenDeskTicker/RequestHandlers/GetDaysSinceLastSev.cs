@@ -33,6 +33,23 @@ namespace ZenDeskTicker.RequestHandlers
 
             var result = await client.GetAsync<ZendeskSearch>(restRequest);
 
+            var useTagDate = bool.Parse(_config["useTagDate"]);
+            if (!useTagDate)
+            {
+                var latestTicket = result.results.Take(1).FirstOrDefault();
+                return new DaysSinceLastSevResponse()
+                {
+                    SeverityLevel = request.SeverityLevel,
+                    DaysSinceSev = (int)(DateTime.Now.Date - latestTicket.created_at.Date).TotalDays,
+                    TicketCreatedAt = latestTicket.created_at,
+                    TicketTitle = latestTicket.raw_subject,
+                    Status = latestTicket.status,
+                    InvestigativeSteps = latestTicket.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskInvestigativeStepsId"])?.value?.ToString(),
+                    ResolutionSummary = latestTicket.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskResolutionSummaryId"])?.value?.ToString(),
+                    TicketSummary = latestTicket.custom_fields?.FirstOrDefault(x => x.id.ToString() == _config["zendeskTicketSummaryId"])?.value?.ToString()
+                };
+            }
+
             var topResults = result.results?.Take(int.Parse(_config["auditScanLimit"]));
             if (topResults == null)
             {

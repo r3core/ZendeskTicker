@@ -46,7 +46,7 @@ namespace ZenDeskTicker.RequestHandlers
                     {
                         return new DaysSinceUsingAuditResponse()
                         {
-                            DaysSinceSev = (DateTime.UtcNow.Date - orderedAudits[i].created_at.Date).TotalDays
+                            DaysSinceSev = (DateTime.Now.Date - orderedAudits[i].created_at.Date).TotalDays
                         };
                     }
                 }
