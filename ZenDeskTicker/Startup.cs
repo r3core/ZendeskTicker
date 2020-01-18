@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ZenDeskTicker.RequestHandlers;
+using ZenDeskTicker.Storage;
 
 namespace ZenDeskTicker
 {
@@ -30,6 +31,8 @@ namespace ZenDeskTicker
             });
 
             services.AddScoped<GetDaysSinceLastSev>();
+            services.AddScoped<ITableHelper, TableHelper>();
+            services.AddScoped<IScoreService, ScoreService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

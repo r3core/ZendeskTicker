@@ -1,22 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using RestSharp;
-using Newtonsoft.Json;
 using ZenDeskTicker.ExternalModels;
 using ZenDeskTicker.Models;
+using ZenDeskTicker.Storage;
 
 namespace ZenDeskTicker.RequestHandlers
 {
     public class GetDaysSinceLastSev
     {
         private readonly IConfiguration _config;
+        private readonly IScoreService _scoreService;
 
-        public GetDaysSinceLastSev(IConfiguration config)
+        public GetDaysSinceLastSev(IConfiguration config, IScoreService scoreService)
         {
             _config = config;
+            _scoreService = scoreService;
         }
 
         public async Task<DaysSinceLastSevResponse> HandleAsync(DaysSinceLastSevRequest request)
@@ -37,10 +38,12 @@ namespace ZenDeskTicker.RequestHandlers
             if (!useTagDate)
             {
                 var latestTicket = result.results.Take(1).FirstOrDefault();
+                int totalDays = (int)(DateTime.Now.Date - latestTicket.created_at.Date).TotalDays;
                 return new DaysSinceLastSevResponse()
                 {
                     SeverityLevel = request.SeverityLevel,
-                    DaysSinceSev = (int)(DateTime.Now.Date - latestTicket.created_at.Date).TotalDays,
+                    DaysSinceSev = totalDays,
+                    CurrentHighScore = await _scoreService.GetHighScoreAsync(totalDays),
                     TicketCreatedAt = latestTicket.created_at,
                     TicketTitle = latestTicket.raw_subject,
                     Status = latestTicket.status,
@@ -107,6 +110,7 @@ namespace ZenDeskTicker.RequestHandlers
             {
                 SeverityLevel = request.SeverityLevel,
                 DaysSinceSev = (int)mostRecentAudit.DaysSinceSev,
+                CurrentHighScore = (int)mostRecentAudit.DaysSinceSev,
                 TicketCreatedAt = mostRecent.created_at,
                 TicketTitle = mostRecent.raw_subject,
                 Status = mostRecent.status,

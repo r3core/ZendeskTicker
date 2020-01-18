@@ -15,5 +15,6 @@ namespace ZenDeskTicker.Models
         public string InvestigativeSteps { get; set; }
         public string ResolutionSummary { get; set; }
         public DateTime? TicketCreatedAt { get; set; }
+        public int? CurrentHighScore { get; set; }
     }
 }
