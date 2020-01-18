@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import './Home.css';
 
 export class Home extends Component {
@@ -14,11 +14,20 @@ export class Home extends Component {
         fetch('api/NewRelic/DaysSinceSev?severity=1')
             .then(response => response.json())
             .then(data => {
-                this.setState({daysSinceSev1: data, loading: false});
+                this.setState({ daysSinceSev1: data, loading: false });
             });
     }
 
-    
+    static renderHighScore(score) {
+        console.log(score);
+        if (typeof(score) === "number") {
+            return <div className="score-container">
+                <p className="score-title">Current High Score: <span className="score-result">{score} days</span></p>
+            </div>;
+        }
+
+        return <div></div>;
+    }
 
     static renderDaysSinceCounter(DaysSinceSev) {
         var cardClass = 'card'
@@ -53,6 +62,7 @@ export class Home extends Component {
                         <strong>Resolution</strong>: {DaysSinceSev.resolutionSummary}
                     </p>
                 </div>
+                {Home.renderHighScore(DaysSinceSev.currentHighScore)}
             </div>
         );
     }
@@ -64,12 +74,12 @@ export class Home extends Component {
         });
 
         fetch('api/NewRelic/DaysSinceSev?severity=1')
-        .then(response => response.json())
-        .then(data => {
-            this.setState({daysSinceSev1: data, loading: false});
-        });
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ daysSinceSev1: data, loading: false });
+            });
     }
-    
+
     componentDidMount() {
         this.interval = setInterval(() => this.tick(), 10 * 60 * 1000); //10 min
     }
@@ -81,8 +91,8 @@ export class Home extends Component {
     render() {
         let contents = this.state.loading
             ? <p>
-                    <em>Loading...</em>
-                </p>
+                <em>Loading...</em>
+            </p>
             : Home.renderDaysSinceCounter(this.state.daysSinceSev1);
 
         return (

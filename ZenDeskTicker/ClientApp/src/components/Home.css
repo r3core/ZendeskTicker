@@ -19,3 +19,17 @@
 .statusSuccess {
     color: green;
 }
+
+.score-container {
+    text-align: left;
+    font-size: 2em;
+    padding-top: 2em;
+}
+
+.score-title {
+    font-weight: bold;
+}
+
+.score-result {
+    font-weight: normal;
+}
